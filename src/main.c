@@ -59,5 +59,5 @@ void app_main(void) {
                 1, /* This task will run at priority 1.  Higher is more higher priority */
                 NULL ); /* Task Handler to refer to task later. This example does not use the task handle. */
     xTaskCreate(countByThree,"Count By three",2048, NULL,2,NULL);  /*HThis is the task call on one line */
-    xTaskCreate(blinkLed,"Blinky blink",1000,NULL,3,NULL); /* Blink the LED highest priority */
+    xTaskCreatePinnedToCore(blinkLed,"Blinky blink",1000,NULL,3,NULL,1); /* Blink the LED highest priority pinned to second core */
 }
