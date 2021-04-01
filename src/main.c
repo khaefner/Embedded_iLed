@@ -10,6 +10,9 @@
 
 #define PIN 10   //M5stick built in LED
 
+
+static TaskHandle_t rHandler = NULL;
+
 void countByTwo(void * params)
 {
     int counter = 0;
@@ -50,14 +53,32 @@ void blinkLed()
 }
 
 
+void sender(void * params)
+{
+    while (true)
+    {
+        xTaskNotify(rHandler, /*THe task handler*/
+                    1,   /*data we are sending*/
+                    eSetValueWithOverwrite); /*Notify Action  this one overwrites the data*/
+        vTaskDelay(1000/portTICK_PERIOD_MS);
+    }
+    
+}
 
-void app_main(void) {
-    xTaskCreate( &countByTwo, /* Pointer to the function that implements the task. */
-                "Count by two",/* Text name for the task. This is to facilitate debugging only. */
-                2048, /* Stack depth - how much memory to use for this task*/
-                NULL, /* This example does not use the task parameter. */
-                1, /* This task will run at priority 1.  Higher is more higher priority */
-                NULL ); /* Task Handler to refer to task later. This example does not use the task handle. */
-    xTaskCreate(&countByThree,"Count By three",2048, NULL,2,NULL);  /*HThis is the task call on one line */
-    xTaskCreatePinnedToCore(&blinkLed,"Blinky blink",1000,NULL,3,NULL,1); /* Blink the LED highest priority pinned to second core */
+void receiver(void * params)
+{
+    uint data;
+    while (true)
+    {
+        xTaskNotifyWait(0,0,&data,portMAX_DELAY);
+        printf("Received:  %d\n",data);
+    }
+    
+}
+
+
+void app_main(void) 
+{
+    xTaskCreate(&receiver,"reciever",2048,NULL,2,&rHandler);
+    xTaskCreate(&sender,"sender",2048,NULL,2,NULL);
 }
